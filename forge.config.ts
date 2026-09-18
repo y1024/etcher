@@ -46,8 +46,14 @@ const config: ForgeConfig = {
 			'lib/shared/sudo/sudo-askpass.osascript-en.js',
 		],
 		osxSign: {
-			optionsForFile: () => ({
-				entitlements: './entitlements.mac.plist',
+			// `etcher-util` is the privileged helper invoked under sudo to write
+			// raw disk images: it gets its own, maximally restrictive entitlements
+			// rather than inheriting the JIT/debugging exceptions the main app
+			// needs, so hardened runtime protections stay fully intact on it.
+			optionsForFile: (filePath: string) => ({
+				entitlements: filePath.endsWith('/etcher-util')
+					? './entitlements.mac.util.plist'
+					: './entitlements.mac.plist',
 				hardenedRuntime: true,
 			}),
 		},
